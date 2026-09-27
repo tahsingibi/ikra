@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f3eee6;
+  --bg-elevated: #fbf8f2;
+  --bg-mute: #ebe4d8;
+  --ink: #1b1713;
+  --muted: #6d655b;
+  --line: #e0d5c6;
+  --accent: #3f5a48;
+  --accent-soft: #e4eee7;
+  --warn: #8a4b2f;
+  --arabic-size: 30px;
+  --translation-size: 17px;
+  --reading-leading: 1.9;
+  --header-h: 3.5rem;
+  --player-h: 0px;
+  --reader-nav-h: 0px;
+}
+
+.dark {
+  --bg: #0f0e0c;
+  --bg-elevated: #171512;
+  --bg-mute: #221f1b;
+  --ink: #f4efe6;
+  --muted: #b7aeA1;
+  --line: #2c2823;
+  --accent: #a3bba8;
+  --accent-soft: #1c241e;
+  --warn: #e1a48a;
+}
+
+.dark.oled {
+  --bg: #000000;
+  --bg-elevated: #070707;
+  --bg-mute: #111111;
+  --line: #1d1d1d;
+}
+
+.high-contrast {
+  --ink: #000000;
+  --bg: #ffffff;
+  --muted: #222222;
+  --line: #111111;
+}
+
+.dark.high-contrast {
+  --ink: #ffffff;
+  --bg: #000000;
+  --muted: #e8e8e8;
+  --line: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-elevated: var(--bg-elevated);
+  --color-mute: var(--bg-mute);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-arabic), "Noto Naskh Arabic", serif;
+  --max-width-readable: 42rem;
+  --max-width-wide: 52rem;
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.font-arabic {
+  font-family: var(--font-arabic);
+  font-feature-settings: "locl" 1, "calt" 1;
+  direction: rtl;
+}
+
+.verse-arabic {
+  font-family: var(--font-arabic);
+  font-size: var(--arabic-size);
+  line-height: 2.05;
+  direction: rtl;
+  text-align: right;
+}
+
+.verse-translation {
+  font-size: var(--translation-size);
+  line-height: var(--reading-leading);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 80;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.5rem 0.9rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
