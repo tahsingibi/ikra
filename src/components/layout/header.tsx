@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dropdown } from "@/components/ui/dropdown";
+import { useOfflinePath } from "@/features/offline/offline-gate";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -16,7 +17,9 @@ const LINKS = [
 ] as const;
 
 export function Header() {
-  const pathname = usePathname();
+  const offlinePath = useOfflinePath();
+  const nextPath = usePathname();
+  const pathname = offlinePath ?? nextPath;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur-md">

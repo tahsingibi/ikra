@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { nuzulRank } from "@/data/nuzul";
 import { surahPath } from "@/lib/paths";

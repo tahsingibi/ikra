@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/footer";
 import { AudioBar } from "@/features/audio/audio-bar";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { OfflineBanner } from "@/components/pwa/offline-banner";
+import { OfflineGate } from "@/features/offline/offline-gate";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <Header />
       <OfflineBanner />
       <main id="icerik" className="mx-auto w-full max-w-5xl flex-1 px-4 pb-12 pt-6">
-        {children}
+        <OfflineGate>{children}</OfflineGate>
       </main>
       <Footer />
       <AudioBar />

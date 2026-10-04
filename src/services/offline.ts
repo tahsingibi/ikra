@@ -51,18 +51,12 @@ export async function loadPackPreferringOffline(id: string) {
 }
 
 export async function ensureDefaultOfflinePacks() {
-  const defaults: OfflinePackId[] = [
-    "quran-uthmani",
-    "tr.transliteration",
-    "tr.diyanet",
-  ];
-  for (const id of defaults) {
-    if (!(await isPackStored(id))) {
-      try {
-        await downloadPack(id);
-      } catch {
-        // First visit may still read from network cache / public files.
-      }
+  for (const pack of OFFLINE_PACKS) {
+    if (await isPackStored(pack.id)) continue;
+    try {
+      await downloadPack(pack.id);
+    } catch {
+      // SW cache / public files can still serve the pack on first paint.
     }
   }
 }

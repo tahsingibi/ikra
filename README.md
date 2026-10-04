@@ -106,11 +106,14 @@ Türkçe tefsir için lisanslı bir kaynak bağlamak üzere `src/data/sources` a
 
 ## PWA ve çevrimdışı
 
+Uygulamayı telefona veya bilgisayara ekledikten sonra, bir kez açılmış olması yeterlidir. Sonraki açılışlarda internet olmasa da sure, cüz, sayfa, arama, not, favori ve ayarlar çalışır. Sesli okuma için internet gerekir.
+
 - Manifest: ad **İKRA**, `display: standalone`
-- Service worker: `public/sw.js`
+- Service worker: `public/sw.js` — kabuk, statik dosyalar ve tüm `public/data` paketleri
 - Metin paketleri Cache Storage + IndexedDB
+- Çevrimdışıyken gezinme istemci tarafında JSON paketlerinden render edilir
 - Ses çevrimdışı zorunlu değildir
-- İlk kullanımda `/cevrimdisi` üzerinden paket seçilir
+- İlk çevrimiçi açılışta paketler otomatik önbelleğe alınır; `/cevrimdisi` ile yönetilir
 
 ## Deployment
 
