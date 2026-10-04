@@ -1,6 +1,6 @@
 import { nuzulRank } from "@/data/nuzul";
 import { HAFS_VERSE_COUNTS } from "@/lib/verse-counts";
-import type { Surah } from "@/types/quran";
+import type { ReadingOrder, Surah } from "@/types/quran";
 
 type SurahSeed = Omit<Surah, "ayahCount" | "nuzulOrder">;
 
@@ -152,14 +152,62 @@ export function getSurahsInNuzulOrder(
   );
 }
 
+export function getSurahsByOrder(
+  order: ReadingOrder = "mushaf",
+  nuzulSource: "egyptian" | "noldeke" = "egyptian",
+): Surah[] {
+  return order === "nuzul"
+    ? getSurahsInNuzulOrder(nuzulSource)
+    : getSurahsInMushafOrder();
+}
+
 export function adjacentSurahs(
   number: number,
-  order: "mushaf" | "nuzul" = "mushaf",
+  order: ReadingOrder = "mushaf",
   nuzulSource: "egyptian" | "noldeke" = "egyptian",
 ): { previous?: Surah; next?: Surah } {
-  const list =
-    order === "nuzul" ? getSurahsInNuzulOrder(nuzulSource) : SURAHS;
+  const list = getSurahsByOrder(order, nuzulSource);
   const index = list.findIndex((item) => item.number === number);
   if (index === -1) return {};
   return { previous: list[index - 1], next: list[index + 1] };
+}
+
+export type AdjacentVerse = {
+  surah: number;
+  ayah: number;
+};
+
+export function adjacentVerses(
+  surah: number,
+  ayah: number,
+  order: ReadingOrder = "mushaf",
+  nuzulSource: "egyptian" | "noldeke" = "egyptian",
+): { previous?: AdjacentVerse; next?: AdjacentVerse } {
+  const meta = getSurah(surah);
+  if (!meta || ayah < 1 || ayah > meta.ayahCount) return {};
+
+  let previous: AdjacentVerse | undefined;
+  if (ayah > 1) {
+    previous = { surah, ayah: ayah - 1 };
+  } else {
+    const prevSurah = adjacentSurahs(surah, order, nuzulSource).previous;
+    if (prevSurah) {
+      previous = { surah: prevSurah.number, ayah: prevSurah.ayahCount };
+    }
+  }
+
+  let next: AdjacentVerse | undefined;
+  if (ayah < meta.ayahCount) {
+    next = { surah, ayah: ayah + 1 };
+  } else {
+    const nextSurah = adjacentSurahs(surah, order, nuzulSource).next;
+    if (nextSurah) next = { surah: nextSurah.number, ayah: 1 };
+  }
+
+  return { previous, next };
+}
+
+export function formatVerseRef(surah: number, ayah: number): string {
+  const meta = getSurah(surah);
+  return `${meta?.name ?? surah} ${ayah}`;
 }

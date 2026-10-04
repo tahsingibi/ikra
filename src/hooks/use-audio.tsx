@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { getSurah } from "@/data/surahs";
+import { adjacentSurahs, getSurah } from "@/data/surahs";
 import { verseAudioUrl } from "@/services/audio";
 import { useOnline } from "@/hooks/use-online";
 import { useSettings } from "@/hooks/use-settings";
@@ -119,10 +119,22 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       void loadAndPlay(surah, 1);
       return;
     }
-    if (settings.autoplayNext && surah < 114) {
-      void loadAndPlay(surah + 1, 1);
-    }
-  }, [ayah, loadAndPlay, settings.autoplayNext, settings.repeatMode, surah]);
+    if (!settings.autoplayNext) return;
+    const nextSurah = adjacentSurahs(
+      surah,
+      settings.readingOrder,
+      settings.nuzulSourceId,
+    ).next;
+    if (nextSurah) void loadAndPlay(nextSurah.number, 1);
+  }, [
+    ayah,
+    loadAndPlay,
+    settings.autoplayNext,
+    settings.nuzulSourceId,
+    settings.readingOrder,
+    settings.repeatMode,
+    surah,
+  ]);
 
   const previous = useCallback(() => {
     if (!surah || !ayah) return;
@@ -130,11 +142,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       void loadAndPlay(surah, ayah - 1);
       return;
     }
-    if (surah > 1) {
-      const prev = getSurah(surah - 1);
-      if (prev) void loadAndPlay(prev.number, prev.ayahCount);
-    }
-  }, [ayah, loadAndPlay, surah]);
+    const prev = adjacentSurahs(
+      surah,
+      settings.readingOrder,
+      settings.nuzulSourceId,
+    ).previous;
+    if (prev) void loadAndPlay(prev.number, prev.ayahCount);
+  }, [ayah, loadAndPlay, settings.nuzulSourceId, settings.readingOrder, surah]);
 
   useEffect(() => {
     const audio = audioRef.current;

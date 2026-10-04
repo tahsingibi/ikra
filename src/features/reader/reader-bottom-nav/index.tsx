@@ -2,16 +2,25 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { surahPath } from "@/lib/paths";
+import type { Route } from "next";
 import { QuickNav } from "@/features/reader/quick-nav";
 import type { Surah } from "@/types/quran";
+
+export type ReaderNeighbor = {
+  href: Route;
+  label: string;
+};
 
 export function ReaderBottomNav({
   surah,
   neighbors,
+  currentAyah,
+  verseMode = false,
 }: {
   surah: Surah;
-  neighbors: { previous?: Surah; next?: Surah };
+  neighbors: { previous?: ReaderNeighbor; next?: ReaderNeighbor };
+  currentAyah?: number;
+  verseMode?: boolean;
 }) {
   const navRef = useRef<HTMLElement>(null);
 
@@ -35,25 +44,31 @@ export function ReaderBottomNav({
       ref={navRef}
       className="fixed inset-x-0 z-30 border-t border-line bg-elevated/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
       style={{ bottom: "var(--player-h)" }}
-      aria-label="Sure dolaşımı"
+      aria-label={verseMode ? "Ayet dolaşımı" : "Sure dolaşımı"}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2">
         {neighbors.previous ? (
-          <Link className="min-h-11 px-3 py-2 text-sm flex items-center justify-center" href={surahPath(neighbors.previous.number)}>
-            ← {neighbors.previous.name}
+          <Link
+            className="flex min-h-11 min-w-0 max-w-[38%] items-center justify-center truncate px-3 py-2 text-sm"
+            href={neighbors.previous.href}
+          >
+            ← {neighbors.previous.label}
           </Link>
         ) : (
-          <span />
+          <span className="min-w-0 max-w-[38%]" />
         )}
-        
-        <QuickNav current={surah} />
+
+        <QuickNav current={surah} currentAyah={currentAyah} />
 
         {neighbors.next ? (
-          <Link className="min-h-11 px-3 py-2 text-sm flex items-center justify-center" href={surahPath(neighbors.next.number)}>
-            {neighbors.next.name} →
+          <Link
+            className="flex min-h-11 min-w-0 max-w-[38%] items-center justify-center truncate px-3 py-2 text-sm"
+            href={neighbors.next.href}
+          >
+            {neighbors.next.label} →
           </Link>
         ) : (
-          <span />
+          <span className="min-w-0 max-w-[38%]" />
         )}
       </div>
     </nav>

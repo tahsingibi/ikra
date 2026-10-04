@@ -1,21 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { getSurahsInMushafOrder, getSurahsInNuzulOrder } from "@/data/surahs";
+import { useEffect, useMemo, useState } from "react";
+import { getSurahsByOrder } from "@/data/surahs";
 import { nuzulRank } from "@/data/nuzul";
 import { surahPath } from "@/lib/paths";
 import { turkishIncludes } from "@/lib/utils";
 import { useSettings } from "@/hooks/use-settings";
+import type { ReadingOrder } from "@/types/quran";
 
-export function SurahList({ order = "mushaf" }: { order?: "mushaf" | "nuzul" }) {
-  const { settings } = useSettings();
+export function SurahList({ order = "mushaf" }: { order?: ReadingOrder }) {
+  const { settings, ready, update } = useSettings();
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!ready) return;
+    if (settings.readingOrder === order) return;
+    update({ readingOrder: order });
+  }, [order, ready, settings.readingOrder, update]);
+
   const surahs = useMemo(() => {
-    const list =
-      order === "nuzul"
-        ? getSurahsInNuzulOrder(settings.nuzulSourceId)
-        : getSurahsInMushafOrder();
+    const list = getSurahsByOrder(order, settings.nuzulSourceId);
     if (!query.trim()) return list;
     return list.filter(
       (surah) =>

@@ -2,13 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BISMILLAH_AR, BISMILLAH_TR, shouldShowBismillah } from "@/lib/verse-counts";
-import { adjacentSurahs } from "@/data/surahs";
+import {
+  adjacentSurahs,
+  adjacentVerses,
+  formatVerseRef,
+} from "@/data/surahs";
 import { LayerToggles } from "@/features/reader/layer-toggles";
 import { VerseCard } from "@/features/reader/verse-card";
-import { ReaderBottomNav } from "@/features/reader/reader-bottom-nav";
+import {
+  ReaderBottomNav,
+  type ReaderNeighbor,
+} from "@/features/reader/reader-bottom-nav";
 import { useAudio } from "@/hooks/use-audio";
 import { useSettings } from "@/hooks/use-settings";
-import { versePath } from "@/lib/paths";
+import { surahPath, versePath } from "@/lib/paths";
 import { saveProgress } from "@/services/library";
 import { loadPack } from "@/services/pack-loader";
 import type { ReaderVerse, Surah } from "@/types/quran";
@@ -27,16 +34,69 @@ export function ReaderView({
   const { settings } = useSettings();
   const audio = useAudio();
   const [activeVerses, setActiveVerses] = useState<ReaderVerse[]>(verses);
-  const [visibleCount, setVisibleCount] = useState(() => {
-    if (!initialAyah) return Math.min(PAGE_SIZE, verses.length);
-    return Math.min(verses.length, Math.max(PAGE_SIZE, initialAyah + 4));
-  });
+  const [loadedCount, setLoadedCount] = useState(PAGE_SIZE);
 
-  const neighbors = adjacentSurahs(
-    surah.number,
-    settings.readingOrder,
+  const neighbors = useMemo((): {
+    previous?: ReaderNeighbor;
+    next?: ReaderNeighbor;
+  } => {
+    if (initialAyah) {
+      const versesNeighbors = adjacentVerses(
+        surah.number,
+        initialAyah,
+        settings.readingOrder,
+        settings.nuzulSourceId,
+      );
+      return {
+        previous: versesNeighbors.previous
+          ? {
+              href: versePath(
+                versesNeighbors.previous.surah,
+                versesNeighbors.previous.ayah,
+              ),
+              label: formatVerseRef(
+                versesNeighbors.previous.surah,
+                versesNeighbors.previous.ayah,
+              ),
+            }
+          : undefined,
+        next: versesNeighbors.next
+          ? {
+              href: versePath(versesNeighbors.next.surah, versesNeighbors.next.ayah),
+              label: formatVerseRef(
+                versesNeighbors.next.surah,
+                versesNeighbors.next.ayah,
+              ),
+            }
+          : undefined,
+      };
+    }
+
+    const surahNeighbors = adjacentSurahs(
+      surah.number,
+      settings.readingOrder,
+      settings.nuzulSourceId,
+    );
+    return {
+      previous: surahNeighbors.previous
+        ? {
+            href: surahPath(surahNeighbors.previous.number),
+            label: surahNeighbors.previous.name,
+          }
+        : undefined,
+      next: surahNeighbors.next
+        ? {
+            href: surahPath(surahNeighbors.next.number),
+            label: surahNeighbors.next.name,
+          }
+        : undefined,
+    };
+  }, [
+    initialAyah,
     settings.nuzulSourceId,
-  );
+    settings.readingOrder,
+    surah.number,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +127,8 @@ export function ReaderView({
   }, [settings.translationSourceId, settings.tafsirSourceId, surah.number]);
 
   const revealed = Math.max(
-    visibleCount,
+    loadedCount,
+    initialAyah ? initialAyah + 4 : 0,
     audio.surah === surah.number && audio.ayah ? audio.ayah + 3 : 0,
   );
   const visible = useMemo(
@@ -142,22 +203,26 @@ export function ReaderView({
           <VerseCard key={verse.id} verse={verse} id={`ayet-${verse.ayah}`} />
         ))}
       </div>
-      {visibleCount < activeVerses.length ? (
+      {visible.length < activeVerses.length ? (
         <div className="py-6 text-center">
           <button
             type="button"
             className="rounded-full bg-mute px-4 py-2 text-sm"
             onClick={() =>
-              setVisibleCount((count) => Math.min(activeVerses.length, count + PAGE_SIZE))
+              setLoadedCount((count) =>
+                Math.min(activeVerses.length, Math.max(count, revealed) + PAGE_SIZE),
+              )
             }
           >
-            Sonraki ayetleri göster ({visibleCount}/{activeVerses.length})
+            Sonraki ayetleri göster ({visible.length}/{activeVerses.length})
           </button>
         </div>
       ) : null}
       <ReaderBottomNav
         surah={surah}
         neighbors={neighbors}
+        currentAyah={initialAyah}
+        verseMode={Boolean(initialAyah)}
       />
       {initialAyah ? (
         <p className="sr-only">
