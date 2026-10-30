@@ -10,7 +10,7 @@ import {
 import { LayerToggles } from "@/features/reader/layer-toggles";
 import { VerseCard } from "@/features/reader/verse-card";
 import {
-  ReaderBottomNav,
+  usePublishReaderNav,
   type ReaderNeighbor,
 } from "@/features/reader/reader-bottom-nav";
 import { useAudio } from "@/hooks/use-audio";
@@ -97,6 +97,17 @@ export function ReaderView({
     settings.readingOrder,
     surah.number,
   ]);
+
+  const navModel = useMemo(
+    () => ({
+      surah,
+      neighbors,
+      currentAyah: initialAyah,
+      verseMode: Boolean(initialAyah),
+    }),
+    [initialAyah, neighbors, surah],
+  );
+  usePublishReaderNav(navModel);
 
   useEffect(() => {
     let cancelled = false;
@@ -218,12 +229,6 @@ export function ReaderView({
           </button>
         </div>
       ) : null}
-      <ReaderBottomNav
-        surah={surah}
-        neighbors={neighbors}
-        currentAyah={initialAyah}
-        verseMode={Boolean(initialAyah)}
-      />
       {initialAyah ? (
         <p className="sr-only">
           Kısayol: {versePath(surah.number, initialAyah)}
